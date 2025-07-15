@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Basic Form</title>
+    <script>
+        function createStudent() {
+            const student = {
+            fname : document.getElementById('fname').value,
+            lname : document.getElementById('lname').value,
+            email_id : document.getElementById('email_id').value,
+            mob_no : document.getElementById('mob_no').value, 
+            address : document.getElementById('address').value
+            };
+            fetch('http://localhost:8080/api/students', {
+
+                method: 'POST',
+
+                headers: {
+
+                    'Content-Type': 'application/json'
+
+                },
+
+                body: JSON.stringify(student)
+
+            })
+
+            .then(response => {
+
+                if (response.ok) {
+
+                    document.getElementById('response').textContent = 'Student added!';
+
+                } else {
+
+                    document.getElementById('response').textContent = 'Error adding student.';
+
+                }
+
+            })
+
+            .catch(error => {
+
+                document.getElementById('response').textContent = 'Request failed.';
+
+                console.error(error);
+
+            });
+ 
+            
+            //console.log("fname:", fname);
+            //console.log("lname:", lname);
+
+            
+            console.log("email_id:", email_id);
+
+            const mob_no = document.getElementById("mob_no").value;
+            console.log("mob_no:", mob_no);
+        
+            const address = document.getElementById("address").value;
+            console.log("address:"+address);
+
+           // window.alert(fname + ", " + lname + ", " + email_id + ", " + mob_no + ", "+address);
+        }
+        function loadStudents() {
+
+  fetch('http://localhost:8080/api/students')
+
+    .then(response => response.json())
+
+    .then(data => {
+
+      const tableBody = document.querySelector('#StudentTable tbody');
+
+      tableBody.innerHTML = ''; // Clear previous rows
+ 
+      data.forEach(student => {
+
+        const row = document.createElement('tr');
+ 
+        row.innerHTML = `
+<td><span>${student.fname}</span><input type="text" value="${student.fname}" style="display:none;"></td>
+<td><span>${student.lname}</span><input type="text" value="${student.lname}" style="display:none;"></td>
+<td><span>${student.email_id}</span><input type="text" value="${student.email_id}" style="display:none;"></td>
+<td><span>${student.mob_no}</span><input type="text" value="${student.mob_no}" style="display:none;"></td>
+<td><span>${student.address}</span><input type="text" value="${student.address}" style="display:none;"></td>
+<td>
+<button onclick="editRow(this)">Edit</button>
+<button onclick="updateStudent(this, '${student.email_id}')" style="display:none;">Update</button>
+</td>
+
+        `;
+ 
+        tableBody.appendChild(row);
+
+      });
+
+    })
+
+    .catch(error => console.error('Error fetching data:', error));
+
+}
+function editRow(button) {
+
+  const row = button.closest('tr');
+
+  row.querySelectorAll('span').forEach(span => span.style.display = 'none');
+
+  row.querySelectorAll('input').forEach(input => input.style.display = 'inline');
+
+  row.querySelector('button[onclick^="editRow"]').style.display = 'none';
+
+  row.querySelector('button[onclick^="updateStudent"]').style.display = 'inline';
+
+}
+ 
+function updateStudent(button, email_id) {
+
+  const row = button.closest('tr');
+
+  const inputs = row.querySelectorAll('input');
+ 
+  const updatedStudent = {
+
+    fname: inputs[0].value,
+
+    lname: inputs[1].value,
+
+    email_id: inputs[2].value,
+
+    mob_no: inputs[3].value,
+
+    address: inputs[4].value
+
+  };
+ 
+  fetch(`http://localhost:8080/api/students/${email_id}`, {
+
+    method: 'PUT',
+
+    headers: {
+
+      'Content-Type': 'application/json'
+
+    },
+
+    body: JSON.stringify(updatedStudent)
+
+  })
+
+    .then(response => {
+
+      if (response.ok) {
+
+        // Update spans
+
+        const spans = row.querySelectorAll('span');
+
+        spans[0].textContent = updatedStudent.fname;
+
+        spans[1].textContent = updatedStudent.lname;
+
+        spans[2].textContent = updatedStudent.email_id;
+
+        spans[3].textContent = updatedStudent.mob_no;
+
+        spans[4].textContent = updatedStudent.address;
+ 
+        // Toggle UI
+
+        row.querySelectorAll('span').forEach(span => span.style.display = 'inline');
+
+        row.querySelectorAll('input').forEach(input => input.style.display = 'none');
+
+        row.querySelector('button[onclick^="editRow"]').style.display = 'inline';
+
+        row.querySelector('button[onclick^="updateStudent"]').style.display = 'none';
+
+      } else {
+
+        alert('Failed to update student.');
+
+      }
+
+    })
+
+    .catch(error => {
+
+      console.error('Update failed:', error);
+
+    });
+
+}
+
+ 
+
+ 
+ 
+    </script>
+</head>
+<body>
+    <p>Welcome! Fill in your details:</p><br>
+    <p id="response"></p>
+    <form onsubmit="createStudentn(); return false;">
+        <label for="fname">Enter your first name:</label><br>
+        <input type="text" id="fname" name="fname" value="Jay"><br>
+
+        <label for="lname">Enter your last name:</label><br>
+        <input type="text" id="lname" name="lname" value="Darvekar"><br>
+
+        <label for="email_id">Enter your email ID:</label><br>
+        <input type="text" id="email_id" name="email_id" value="example@gmail.com"><br><br>
+
+        <label for="mob_no">Enter your mobile number:</label><br>
+        <input type="tel" id="mob_no" name="mob_no" pattern="[0-9]{10}" required><br><br>
+
+        <label for="address">Enter your address</label><br>
+        <input type="text" id="address" address="address" value="Pune"><br><br>
+
+        <input type="submit" value="Submit">
+    </form>
+    <div>
+        <button onclick="loadStudents()">Load Students</button>
+        <table id="StudentTable" border="1">
+                <thead><tr>
+
+                    <th>First Name</th>
+                    <th>Last name</th>
+                    <th>Email id</th>
+                    <th>Mobile Number</th>
+                    <th>Address </th>
+                </tr>
+                </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    
+</body>
+</html>
